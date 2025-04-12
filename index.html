@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Interactive Portfolio</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    :root {
+      --accent: #82b1ff;
+      --bg-light: #ffffff;
+      --bg-dark: #121212;
+      --text-light: #111;
+      --text-dark: #eee;
+    }
+
+    body {
+      transition: background 0.6s ease, color 0.6s ease;
+      background: linear-gradient(120deg, #f093fb, #f5576c, #4facfe, #00f2fe);
+      background-size: 300% 300%;
+      animation: bgMove 20s ease infinite;
+      color: var(--text-light);
+    }
+
+    body.dark {
+      background: #121212;
+      color: var(--text-dark);
+    }
+
+    @keyframes bgMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 999;
+      background: var(--accent);
+      padding: 0.6rem 1.2rem;
+      border-radius: 30px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    header {
+      padding: 4rem 2rem 2rem;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    h1, h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .editable, .editable[contenteditable="true"] {
+      padding: 0.4rem;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    .editable[contenteditable="true"] {
+      background: rgba(255,255,255,0.2);
+      border: 1px dashed #fff;
+    }
+
+    .edit-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1.2rem;
+      background: #ffca28;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    section {
+      padding: 3rem 2rem;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 1s ease;
+    }
+
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #projects {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .project {
+      background: rgba(255,255,255,0.1);
+      padding: 1rem;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    .project:hover {
+      transform: scale(1.05);
+    }
+
+    .project[contenteditable="true"] {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px dashed #fff;
+    }
+
+    .remove-project {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      color: red;
+    }
+
+    form {
+      max-width: 500px;
+      margin: 1.5rem auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    input, textarea {
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    button[type="submit"], .resume-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .resume-btn {
+      display: inline-block;
+      margin-top: 1rem;
+    }
+
+    canvas {
+      margin-top: 1rem;
+    }
+
+    footer {
+      padding: 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="light">
+  <button class="toggle" onclick="toggleTheme()">🌗 Theme</button>
+
+  <header>
+    <input type="file" id="photoInput" accept="image/*" style="display: none;">
+    <img id="avatar" src="https://media-ccu2-2.cdn.whatsapp.net/v/t61.24694-24/473401655_1144146833723665_4213476430674750439_n.jpg?stp=dst-jpg_s96x96_tt6&ccb=11-4&oh=01_Q5Aa1QHtpNZ65AOcp2gxMLANEj2-OySxaw5gzBSuEJjmiYF62A&oe=6807043E&_nc_sid=5e03e0&_nc_cat=106" class="avatar" alt="Avatar" title="Click to change photo" onclick="photoInput.click()" />
+    <h1 id="name" class="editable" contenteditable="false">Teacher by Profession</h1>
+    <p id="bio" class="editable" contenteditable="false">Expertise in teaching, logical reasoning, problem solving, data analytics, and data management.</p>
+    <button class="edit-btn" onclick="toggleEdit()">✏️ Edit Info</button>
+  </header>
+
+  <section id="projects-section">
+    <h2>🛠️ Projects</h2>
+    <div id="projects"></div>
+    <button class="edit-btn" onclick="addProject()">➕ Add Project</button>
+  </section>
+
+  <section>
+    <h2>📩 Contact Me</h2>
+    <form onsubmit="sendMessage(event)">
+      <input type="text" placeholder="Your Name" required />
+      <input type="email" placeholder="Your Email" required />
+      <textarea rows="4" placeholder="Your Message" required></textarea>
+      <button type="submit">Send</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>📄 Resume</h2>
+    <a class="resume-btn" href="resume.pdf" download>Download Resume</a>
+  </section>
+
+  <section>
+    <h2>🔳 QR Code</h2>
+    <canvas id="qrcode"></canvas>
+  </section>
+
+  <footer>© <span id="year"></span> | My Portfolio | by Ayush Bharti</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script>
+    const body = document.body;
+    const nameEl = document.getElementById("name");
+    const bioEl = document.getElementById("bio");
+    const avatar = document.getElementById("avatar");
+    const photoInput = document.getElementById("photoInput");
+    const projectsContainer = document.getElementById("projects");
+    let editable = false;
+
+    function loadProjects() {
+      const projects = JSON.parse(localStorage.getItem("projects")) || ["📚 School Library System", "📊 Analytics Dashboard"];
+      projectsContainer.innerHTML = "";
+      projects.forEach((text, idx) => {
+        const div = document.createElement("div");
+        div.className = "project editable";
+        div.contentEditable = editable;
+        div.innerText = text;
+        if (editable) {
+          const del = document.createElement("span");
+          del.innerText = "✖";
+          del.className = "remove-project";
+          del.onclick = () => { projects.splice(idx, 1); localStorage.setItem("projects", JSON.stringify(projects)); loadProjects(); };
+          div.appendChild(del);
+        }
+        div.onblur = () => {
+          projects[idx] = div.innerText.replace("✖", "").trim();
+          localStorage.setItem("projects", JSON.stringify(projects));
+        };
+        projectsContainer.appendChild(div);
+      });
+    }
+
+    function addProject() {
+      const projects = JSON.parse(localStorage.getItem("projects")) || [];
+      projects.push("New Project");
+      localStorage.setItem("projects", JSON.stringify(projects));
+      loadProjects();
+    }
+
+    function toggleTheme() {
+      const theme = body.classList.contains("dark") ? "light" : "dark";
+      body.className = theme;
+      localStorage.setItem("theme", theme);
+    }
+
+    function toggleEdit() {
+      editable = !editable;
+      nameEl.contentEditable = bioEl.contentEditable = editable;
+      loadProjects();
+      if (!editable) {
+        localStorage.setItem("name", nameEl.innerText);
+        localStorage.setItem("bio", bioEl.innerText);
+      }
+    }
+
+    function sendMessage(e) {
+      e.preventDefault();
+      alert("📬 Message sent! (simulated)");
+      e.target.reset();
+    }
+
+    photoInput.onchange = (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        avatar.src = reader.result;
+        localStorage.setItem("avatar", reader.result);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.onload = () => {
+      body.className = localStorage.getItem("theme") || "light";
+      nameEl.innerText = localStorage.getItem("name") || nameEl.innerText;
+      bioEl.innerText = localStorage.getItem("bio") || bioEl.innerText;
+      const savedAvatar = localStorage.getItem("avatar");
+      if (savedAvatar) avatar.src = savedAvatar;
+      document.getElementById("year").innerText = new Date().getFullYear();
+      QRCode.toCanvas(document.getElementById("qrcode"), window.location.href, { width: 140 });
+
+      // Scroll animations
+      document.querySelectorAll("section").forEach((el) => {
+        const obs = new IntersectionObserver(entries => {
+          if (entries[0].isIntersecting) el.classList.add("visible");
+        }, { threshold: 0.1 });
+        obs.observe(el);
+      });
+
+      loadProjects();
+    };
+  </script>
+</body>
+</html>
